@@ -464,7 +464,10 @@ mod tests {
     fn test_url_for_with_prefix() {
         let mut resource = Resource::new(ResourceDef::new("/user/{name}.html"));
         resource.name("index");
+        let mut unprefixed = Resource::new(ResourceDef::new("/test/{name}.html"));
+        unprefixed.name("no-prefix");
         let mut router = Router::<()>::default();
+        router.register_resource(unprefixed); // non prefixed
         router.set_prefix("/prefix");
         router.register_resource(resource);
 
@@ -484,6 +487,12 @@ mod tests {
         assert_eq!(
             url.ok().unwrap().as_str(),
             "http://www.rust-lang.org/prefix/user/test.html"
+        );
+        // trying the unprefixed
+        let url = req.url_for("no-prefix", &["test"]);
+        assert_eq!(
+            url.ok().unwrap().as_str(),
+            "http://www.rust-lang.org/test/test.html"
         );
     }
 
